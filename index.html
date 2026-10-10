@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free-Hour Utilizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Free-Hour Utilizer</h1>
+    <p>Make every free minute count!</p>
+
+    <h2>Plan Your Free Time</h2>
+
+    <label for="minutes">How many free minutes do you have?</label>
+    <input type="number" id="minutes" min="1" placeholder="Enter minutes">
+
+    <button onclick="suggestActivity()">Get Suggestions</button>
+
+    <h2>Your Suggestions</h2>
+    <p id="result">Your activity suggestions will appear here.</p>
+
+    <script>
+        function suggestActivity() {
+            const minutes = Number(document.getElementById("minutes").value);
+            const result = document.getElementById("result");
+
+            if (minutes <= 0) {
+                result.textContent = "Please enter a valid number of minutes.";
+            } else if (minutes <= 15) {
+                result.textContent = "Quick revision, review notes, or plan your tasks.";
+            } else if (minutes <= 30) {
+                result.textContent = "Practice coding, read a chapter, or revise a topic.";
+            } else if (minutes <= 60) {
+                result.textContent = "Work on an assignment, solve problems, or learn a new skill.";
+            } else {
+                result.textContent = "Great! Work on a project, complete assignments, and take short breaks.";
+            }
+        }
+        let tasks = JSON.parse(localStorage.getItem("freeHourTasks"))||[];
+        function addTask() {
+    const input = document.getElementById("taskInput");
+    const priority = document.getElementById("taskPriority");
+
+    if (input.value.trim() === "") {
+        alert("Please enter a task!");
+        return;
+    }
+
+   tasks.push({
+    name: input.value.trim(),
+    priority: priority.value,
+    completed: false
+    });
+
+    localStorage.setItem("freeHourTasks", JSON.stringify(tasks));
+
+    input.value = "";
+    displayTasks();
+    }
+
+        function toggleTask(index) {
+        tasks[index].completed = !tasks[index].completed;
+        localStorage.setItem("freeHourTasks", JSON.stringify(tasks));
+        displayTasks();
+    }
+        let currentFilter = "all";
+
+        function filterTasks(filter) {
+        currentFilter = filter;
+        displayTasks();
+    }
+
+        function displayTasks() {
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        tasks.forEach((task, index) => {
+            if(currentFilter==="pending"&&task.completed) return;
+            if(currentFilter==="completed"&&!task.completed) return;
+        const item = document.createElement("li");
+        const checkbox = document.createElement("input");
+
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.addEventListener("change", () => toggleTask(index));
+
+       const label = document.createElement("span");
+        label.textContent = ` ${task.name} — ${task.priority}`;
+
+        if (task.completed) {
+        label.style.textDecoration = "line-through";
+        }
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.style.marginLeft = "8px";
+
+        editButton.addEventListener("click", () => {
+        const newName = prompt("Edit task name:", task.name);
+
+        if (newName === null || newName.trim() === "") {
+        return;
+        }
+
+        const newPriority = prompt(
+            "Enter priority: High, Medium, or Low",
+            task.priority
+        );
+
+        if (newPriority === null) {
+            return;
+        }
+
+        const priority = newPriority.trim().toLowerCase();
+        const validPriorities = ["high", "medium", "low"];
+
+        if (!validPriorities.includes(priority)) {
+            alert("Please enter High, Medium, or Low.");
+            return;
+        }
+
+        task.name = newName.trim();
+        task.priority = priority.charAt(0).toUpperCase() + priority.slice(1);
+
+        localStorage.setItem("freeHourTasks", JSON.stringify(tasks));
+        displayTasks();
+        });
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.style.marginLeft = "10px";
+        deleteButton.style.backgroundColor = "#e57373";
+        deleteButton.style.color = "white";
+        deleteButton.style.border = "none";
+        deleteButton.style.padding = "5px 10px";
+        deleteButton.style.borderRadius = "6px";
+        deleteButton.style.cursor = "pointer";
+
+        deleteButton.addEventListener("click", () => {
+            tasks.splice(index, 1);
+            localStorage.setItem("freeHourTasks", JSON.stringify(tasks));
+            displayTasks();
+        });
+
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        item.appendChild(editButton);
+        item.appendChild(deleteButton);
+        list.appendChild(item);
+        });
+        const completed = tasks.filter(task => task.completed).length;
+        const total = tasks.length;
+        const pending = total - completed;
+
+        
+        document.getElementById("totalCount").textContent = total;
+        document.getElementById("completedCount").textContent = completed;
+        document.getElementById("pendingCount").textContent = pending;
+
+        document.getElementById("taskCompletionCount").textContent=`Tasks Completed:${completed}/${total}`;
+        }
+        displayTasks();
+    </script>
+    <section id="task-section">
+    <h2>My Tasks</h2>
+        <div class="progress-dashboard">
+    <p>Total Tasks: <span id="totalCount">0</span></p>
+    <p>Completed Tasks: <span id="completedCount">0</span></p>
+    <p>Pending Tasks: <span id="pendingCount">0</span></p>
+    </div>
+    <input type="text" id="taskInput"
+           placeholder="Enter a task, e.g. Revise OS">
+
+    <select id="taskPriority">
+        <option value="High">High Priority</option>
+        <option value="Medium" selected>Medium Priority</option>
+        <option value="Low">Low Priority</option>
+    </select>
+
+    <button onclick="addTask()">Add Task</button>
+
+    <p id="taskCount">Tasks completed: 0 / 0</p>
+    <div class="task-filters">
+    <button onclick="filterTasks('all')">All Tasks</button>
+    <button onclick="filterTasks('pending')">Pending</button>
+    <button onclick="filterTasks('completed')">Completed</button>
+    </div>
+    <ul id="taskList"></ul>
+</section>
+</body>
+</html>
