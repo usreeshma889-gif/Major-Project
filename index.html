@@ -150,6 +150,15 @@
         const completed = tasks.filter(task => task.completed).length;
         const total = tasks.length;
         const pending = total - completed;
+        const percentage = total === 0
+        ? 0
+        : Math.round((completed / total) * 100);
+
+        document.getElementById("progressFill").style.width =
+        percentage + "%";
+
+        document.getElementById("progressText").textContent =
+        percentage + "% Completed";
 
         
         document.getElementById("totalCount").textContent = total;
@@ -166,6 +175,13 @@
     <p>Total Tasks: <span id="totalCount">0</span></p>
     <p>Completed Tasks: <span id="completedCount">0</span></p>
     <p>Pending Tasks: <span id="pendingCount">0</span></p>
+    <div class="task-progress">
+    <p>Overall Progress</p>
+    <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+    </div>
+    <p id="progressText">0% Completed</p>
+    </div>
     </div>
     <input type="text" id="taskInput"
            placeholder="Enter a task, e.g. Revise OS">
